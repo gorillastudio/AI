@@ -1,0 +1,5 @@
+{
+  "name": "AI Test Checker",
+  "description": "Grade multiple-choice tests automatically using AI.",
+  "requestFramePermissions": ["camera"]
+}
