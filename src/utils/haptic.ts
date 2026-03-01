@@ -1,9 +1,8 @@
-export const triggerHaptic = () => {
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
+export const triggerHaptic = async () => {
   try {
-    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
-      // Use a more noticeable vibration duration for Android devices
-      window.navigator.vibrate(100);
-    }
+    await Haptics.impact({ style: ImpactStyle.Light });
   } catch (error) {
     console.warn('Haptic feedback not supported or failed', error);
   }
