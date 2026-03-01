@@ -2,6 +2,9 @@ import React from 'react';
 import { StudentTest } from '../types';
 import { ArrowLeft, Download } from 'lucide-react';
 import { triggerHaptic } from '../utils/haptic';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 interface Props {
   studentCount: number;
@@ -25,9 +28,8 @@ export function Results({ studentCount, uploadedTests, onBack }: Props) {
     }
   });
 
-  const handleDownload = () => {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Number of student,Score\n";
+  const handleDownload = async () => {
+    let csvContent = "Number of student,Score\n";
 
     for (let i = 1; i <= studentCount; i++) {
       const data = studentDataMap.get(i);
@@ -35,13 +37,34 @@ export function Results({ studentCount, uploadedTests, onBack }: Props) {
       csvContent += `${i},${score}\n`;
     }
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "test_results.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const fileName = `test_results.csv`;
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: csvContent,
+          directory: Directory.Cache,
+          encoding: Encoding.UTF8,
+        });
+
+        await Share.share({
+          title: 'Test Results',
+          text: 'Here are the test results',
+          url: result.uri,
+          dialogTitle: 'Save or Share Results',
+        });
+      } catch (error) {
+        console.error('Error sharing file:', error);
+      }
+    } else {
+      const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "test_results.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   return (
