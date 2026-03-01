@@ -4,4 +4,5 @@
     <string name="title_activity_main">Answer Key App</string>
     <string name="package_name">com.gorillaz.answerkey</string>
     <string name="custom_url_scheme">com.gorillaz.answerkey</string>
+    <string name="default_web_client_id">641859927599-597pa4b17okpmg6bdi97r9oggj80u9kn.apps.googleusercontent.com</string>
 </resources>

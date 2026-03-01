@@ -1,6 +1,15 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let ai: GoogleGenAI | null = null;
+function getAIInstance() {
+  if (!ai) {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is missing from environment variables.");
+    }
+    ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+  return ai;
+}
 
 export async function analyzeTestImage(base64Image: string, mimeType: string) {
   const responseSchema = {
@@ -28,7 +37,8 @@ export async function analyzeTestImage(base64Image: string, mimeType: string) {
   };
 
   try {
-    const response = await ai.models.generateContent({
+    const aiInstance = getAIInstance();
+    const response = await aiInstance.models.generateContent({
       model: "gemini-3.1-pro-preview",
       contents: [
         {
