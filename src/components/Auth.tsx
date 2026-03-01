@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCredential } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
 import { LogIn, UserPlus, Mail, Lock, AlertCircle } from 'lucide-react';
 import { triggerHaptic } from '../utils/haptic';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { GoogleAuthProvider } from 'firebase/auth';
 
 export function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,7 +19,17 @@ export function Auth() {
     setLoading(true);
     setError('');
     try {
-      await signInWithPopup(auth, googleProvider);
+      if (Capacitor.isNativePlatform()) {
+        const result = await FirebaseAuthentication.signInWithGoogle();
+        if (result.credential?.idToken) {
+          const credential = GoogleAuthProvider.credential(result.credential.idToken);
+          await signInWithCredential(auth, credential);
+        } else {
+          throw new Error('Google Sign-In failed or was cancelled');
+        }
+      } else {
+        await signInWithPopup(auth, googleProvider);
+      }
     } catch (err: any) {
       console.error("Auth error:", err);
       if (err.code === 'auth/unauthorized-domain') {
